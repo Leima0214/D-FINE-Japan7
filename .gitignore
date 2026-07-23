@@ -6,6 +6,8 @@ wandb/
 *.onnx
 
 # D-FINE Japan7 local experiment files
+data/
+dataset/
 datasets/
 dataset_local/
 Japan7-COCO/
@@ -19,6 +21,10 @@ wandb/
 __pycache__/
 *.pyc
 *.pyo
+.venv/
+venv/
+env/
+.pytest_cache/
 *.pth
 *.pt
 *.onnx

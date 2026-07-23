@@ -74,6 +74,9 @@ def main(args) -> None:
     else:
         solver.fit()
 
+    if torch.cuda.is_available() and safe_get_rank() == 0:
+        print(f"Peak CUDA memory: {torch.cuda.max_memory_allocated() / 2**30:.2f} GiB")
+
     dist_utils.cleanup()
 
 

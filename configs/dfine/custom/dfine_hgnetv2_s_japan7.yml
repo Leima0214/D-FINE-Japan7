@@ -1,0 +1,19 @@
+__include__: [
+  '../dfine_hgnetv2_s_coco.yml',
+]
+
+output_dir: ./outputs/japan7/dfine_hgnetv2_s
+
+num_classes: 7
+remap_mscoco_category: False
+sync_bn: False
+
+train_dataloader:
+  dataset:
+    img_folder: /Japan_COCO/Japan_DFINE_COCO/images/train
+    ann_file: /Japan_COCO/Japan_DFINE_COCO/annotations/instances_train.json
+
+val_dataloader:
+  dataset:
+    img_folder: /Japan_COCO/Japan_DFINE_COCO/images/val
+    ann_file: /Japan_COCO/Japan_DFINE_COCO/annotations/instances_val.json
