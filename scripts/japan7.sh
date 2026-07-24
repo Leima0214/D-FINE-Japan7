@@ -3,7 +3,7 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 CONFIG="${DFINE_CONFIG:-${ROOT_DIR}/configs/dfine/custom/dfine_hgnetv2_s_japan7.yml}"
-DATA_ROOT="${JAPAN7_COCO_ROOT:-/Japan_COCO/Japan_DFINE_COCO}"
+DATA_ROOT="${JAPAN7_COCO_ROOT:-/COCO/Japan7-COCO}"
 WEIGHTS="${DFINE_S_WEIGHTS:-${ROOT_DIR}/weights/dfine_s_coco.pth}"
 OUTPUT_ROOT="${JAPAN7_OUTPUT_ROOT:-${ROOT_DIR}/outputs/japan7}"
 PYTHON_BIN="${PYTHON_BIN:-python}"

@@ -33,7 +33,7 @@ bash scripts/setup_rtx4090_env.sh --check-only
 ## 3. 检查数据并下载权重
 
 ```bash
-export JAPAN7_COCO_ROOT=/Japan_COCO/Japan_DFINE_COCO
+export JAPAN7_COCO_ROOT=/COCO/Japan7-COCO
 bash scripts/japan7.sh download
 bash scripts/japan7.sh preflight
 ```
@@ -46,7 +46,7 @@ commit、`nvidia-smi` 和 `pip freeze` 写入 `outputs/japan7/preflight/`。
 
 ```bash
 bash scripts/japan7.sh smoke \
-  --data-root /Japan_COCO/Japan_DFINE_COCO \
+  --data-root /COCO/Japan7-COCO \
   --device cuda:0 \
   --batch-size 4 \
   --val-batch-size 8 \
@@ -75,7 +75,7 @@ test -s "${SMOKE_DIR}/last.pth"
 ```bash
 bash scripts/japan7.sh test \
   --checkpoint "${SMOKE_DIR}/last.pth" \
-  --data-root /Japan_COCO/Japan_DFINE_COCO \
+  --data-root /COCO/Japan7-COCO \
   --device cuda:0 \
   --val-batch-size 8 \
   --workers 4
@@ -89,7 +89,7 @@ APlarge。
 ```bash
 bash scripts/japan7.sh resume \
   --checkpoint "${SMOKE_DIR}/last.pth" \
-  --data-root /Japan_COCO/Japan_DFINE_COCO \
+  --data-root /COCO/Japan7-COCO \
   --device cuda:0 \
   --batch-size 4 \
   --val-batch-size 8 \
