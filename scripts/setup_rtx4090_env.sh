@@ -3,7 +3,7 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 VENV="${DFINE_VENV:-${ROOT_DIR}/.venv}"
-PYTHON_BIN="${PYTHON_BIN:-python3}"
+PYTHON_BIN="${PYTHON_BIN:-python3.11}"
 CHECK_ONLY=false
 
 if [[ "${1:-}" == "--check-only" ]]; then
