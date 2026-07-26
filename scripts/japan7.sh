@@ -134,9 +134,13 @@ case "${COMMAND}" in
   test)
     [[ -n "${CHECKPOINT}" ]] || { echo "--checkpoint is required" >&2; exit 2; }
     output_dir="${OUTPUT_ROOT}/test_$(date +%Y%m%d_%H%M%S)"
-    "${PYTHON_BIN}" "${ROOT_DIR}/train.py" \
+    mkdir -p "${output_dir}"
+    test_command=("${PYTHON_BIN}" "${ROOT_DIR}/train.py" \
       -c "${CONFIG}" -r "${CHECKPOINT}" -d "${DEVICE}" --test-only \
-      --output-dir "${output_dir}" -u "${data_updates[@]}"
+      --output-dir "${output_dir}" -u "${data_updates[@]}")
+    printf '%q ' "${test_command[@]}" > "${output_dir}/command.txt"
+    printf '\n' >> "${output_dir}/command.txt"
+    "${test_command[@]}" 2>&1 | tee "${output_dir}/test.log"
     echo "output=${output_dir}"
     ;;
   resume)
