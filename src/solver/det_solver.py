@@ -225,8 +225,7 @@ class DetSolver(BaseSolver):
                 coco_evaluator.coco_eval["bbox"].eval, self.output_dir / "eval.pth"
             )
             if dist_utils.is_main_process():
-                predictions = coco_evaluator.coco_eval["bbox"].cocoDt.dataset["annotations"]
                 with (self.output_dir / "coco_predictions.json").open("w") as f:
-                    json.dump(predictions, f)
+                    json.dump(coco_evaluator.coco_results["bbox"], f)
 
         return
