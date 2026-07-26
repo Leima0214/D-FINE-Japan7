@@ -137,6 +137,7 @@ case "${COMMAND}" in
     "${PYTHON_BIN}" "${ROOT_DIR}/train.py" \
       -c "${CONFIG}" -r "${CHECKPOINT}" -d "${DEVICE}" --test-only \
       --output-dir "${output_dir}" -u "${data_updates[@]}"
+    echo "output=${output_dir}"
     ;;
   resume)
     [[ -n "${CHECKPOINT}" ]] || { echo "--checkpoint is required" >&2; exit 2; }

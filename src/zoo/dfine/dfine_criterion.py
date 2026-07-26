@@ -20,6 +20,39 @@ from .box_ops import box_cxcywh_to_xyxy, box_iou, generalized_box_iou
 from .dfine_utils import bbox2distance
 
 
+def fgl_edge_weights(
+    target_boxes,
+    mode="none",
+    fixed_high=1.2,
+    sensitivity_min=0.5,
+    sensitivity_max=1.5,
+):
+    """Return mean-one edge weights in [left, top, right, bottom] order."""
+    width, height = target_boxes[:, 2], target_boxes[:, 3]
+    if mode == "none":
+        return torch.ones_like(target_boxes)
+    if mode == "fixed":
+        horizontal = width >= height
+        high = torch.full_like(width, fixed_high)
+        low = torch.full_like(width, 2.0 - fixed_high)
+        x_weight = torch.where(horizontal, low, high)
+        y_weight = torch.where(horizontal, high, low)
+        square = torch.isclose(width, height)
+        x_weight = torch.where(square, torch.ones_like(x_weight), x_weight)
+        y_weight = torch.where(square, torch.ones_like(y_weight), y_weight)
+    elif mode == "sensitivity":
+        denominator = (width + height).clamp_min(torch.finfo(target_boxes.dtype).eps)
+        x_weight = 2.0 * height / denominator
+        y_weight = 2.0 * width / denominator
+        x_weight = x_weight.clamp(sensitivity_min, sensitivity_max)
+        y_weight = y_weight.clamp(sensitivity_min, sensitivity_max)
+    else:
+        raise ValueError(f"unsupported fgl_edge_weighting: {mode}")
+
+    weights = torch.stack([x_weight, y_weight, x_weight, y_weight], dim=-1)
+    return weights / weights.mean(dim=-1, keepdim=True)
+
+
 @register()
 class DFINECriterion(nn.Module):
     """This class computes the loss for D-FINE."""
@@ -42,6 +75,10 @@ class DFINECriterion(nn.Module):
         reg_max=32,
         boxes_weight_format=None,
         share_matched_indices=False,
+        fgl_edge_weighting="none",
+        fgl_fixed_high=1.2,
+        fgl_sensitivity_min=0.5,
+        fgl_sensitivity_max=1.5,
     ):
         """Create the criterion.
         Parameters:
@@ -65,6 +102,14 @@ class DFINECriterion(nn.Module):
         self.own_targets, self.own_targets_dn = None, None
         self.reg_max = reg_max
         self.num_pos, self.num_neg = None, None
+        self.fgl_edge_weighting = fgl_edge_weighting
+        self.fgl_fixed_high = fgl_fixed_high
+        self.fgl_sensitivity_min = fgl_sensitivity_min
+        self.fgl_sensitivity_max = fgl_sensitivity_max
+        if not 1.0 <= fgl_fixed_high < 2.0:
+            raise ValueError("fgl_fixed_high must be in [1, 2)")
+        if not 0.0 < fgl_sensitivity_min <= 1.0 <= fgl_sensitivity_max:
+            raise ValueError("fgl sensitivity bounds must satisfy 0 < min <= 1 <= max")
 
     def loss_labels_focal(self, outputs, targets, indices, num_boxes):
         assert "pred_logits" in outputs
@@ -175,6 +220,13 @@ class DFINECriterion(nn.Module):
                 )[0]
             )
             weight_targets = ious.unsqueeze(-1).repeat(1, 1, 4).reshape(-1).detach()
+            weight_targets = weight_targets * fgl_edge_weights(
+                target_boxes,
+                mode=self.fgl_edge_weighting,
+                fixed_high=self.fgl_fixed_high,
+                sensitivity_min=self.fgl_sensitivity_min,
+                sensitivity_max=self.fgl_sensitivity_max,
+            ).reshape(-1).detach()
 
             losses["loss_fgl"] = self.unimodal_distribution_focal_loss(
                 pred_corners,

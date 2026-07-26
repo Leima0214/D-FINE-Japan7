@@ -1,0 +1,7 @@
+__include__: [
+  'dfine_hgnetv2_s_japan7.yml',
+]
+
+DFINECriterion:
+  fgl_edge_weighting: fixed
+  fgl_fixed_high: 1.2
