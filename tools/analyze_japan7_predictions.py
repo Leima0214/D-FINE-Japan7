@@ -9,6 +9,7 @@ from pathlib import Path
 from pycocotools.coco import COCO
 from pycocotools.cocoeval import COCOeval
 from tidecv import TIDE, datasets
+from tidecv.data import Data
 
 
 def evaluate(coco_gt, coco_dt, category_id=None):
@@ -24,6 +25,23 @@ def evaluate(coco_gt, coco_dt, category_id=None):
         "ap50": float(evaluator.stats[1]),
         "ap75": float(evaluator.stats[2]),
     }
+
+
+def tide_ground_truth(path):
+    payload = json.loads(path.read_text())
+    ground_truth = Data(path.stem, max_dets=100)
+    for image in payload["images"]:
+        ground_truth.add_image(image["id"], image["file_name"])
+    for category in payload["categories"]:
+        ground_truth.add_class(category["id"], category["name"])
+    for annotation in payload["annotations"]:
+        add = (
+            ground_truth.add_ignore_region
+            if annotation.get("iscrowd", 0)
+            else ground_truth.add_ground_truth
+        )
+        add(annotation["image_id"], annotation["category_id"], annotation["bbox"])
+    return ground_truth
 
 
 def main():
@@ -46,18 +64,18 @@ def main():
     for category in coco_gt.loadCats(coco_gt.getCatIds()):
         report["per_class"][category["name"]] = evaluate(coco_gt, coco_dt, category["id"])
 
-    args.output.parent.mkdir(parents=True, exist_ok=True)
-    args.output.write_text(json.dumps(report, indent=2) + "\n")
     print(json.dumps(report, indent=2))
 
     tide = TIDE()
     tide.evaluate(
-        datasets.COCO(str(args.annotations)),
+        tide_ground_truth(args.annotations),
         datasets.COCOResult(str(args.predictions)),
         mode=TIDE.BOX,
         name=args.predictions.parent.name,
     )
     tide.summarize()
+    args.output.parent.mkdir(parents=True, exist_ok=True)
+    args.output.write_text(json.dumps(report, indent=2) + "\n")
 
 
 if __name__ == "__main__":
