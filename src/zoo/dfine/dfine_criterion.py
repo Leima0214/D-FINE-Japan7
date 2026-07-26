@@ -40,7 +40,10 @@ def fgl_edge_weights(
         square = torch.isclose(width, height)
         x_weight = torch.where(square, torch.ones_like(x_weight), x_weight)
         y_weight = torch.where(square, torch.ones_like(y_weight), y_weight)
-    elif mode == "sensitivity":
+    elif mode in ("sensitivity", "sqrt_sensitivity"):
+        if mode == "sqrt_sensitivity":
+            # ConRTF Eq. 13: budget-constrained optimum scales with sqrt(aspect ratio).
+            width, height = width.sqrt(), height.sqrt()
         denominator = (width + height).clamp_min(torch.finfo(target_boxes.dtype).eps)
         x_weight = 2.0 * height / denominator
         y_weight = 2.0 * width / denominator

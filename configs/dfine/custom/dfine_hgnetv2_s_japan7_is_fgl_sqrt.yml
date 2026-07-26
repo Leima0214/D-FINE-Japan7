@@ -1,0 +1,8 @@
+__include__: [
+  'dfine_hgnetv2_s_japan7.yml',
+]
+
+DFINECriterion:
+  fgl_edge_weighting: sqrt_sensitivity
+  fgl_sensitivity_min: 0.5
+  fgl_sensitivity_max: 1.5
